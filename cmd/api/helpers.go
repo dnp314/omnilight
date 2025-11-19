@@ -24,7 +24,7 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst int
 		switch {
 
 		case errors.As(err, &syntaxError):
-			return fmt.Errorf("body contains")
+			return fmt.Errorf("bdy contains badly-formed JSON (at character %d)", syntaxError.Offset)
 
 		case errors.Is(err, io.ErrUnexpectedEOF):
 			return errors.New("body contains badly-formed JSON")
