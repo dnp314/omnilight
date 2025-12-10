@@ -11,7 +11,9 @@ import (
 	"strings"
 )
 
+// NOTE: pa55word
 // NOTE: for better styling
+
 type envelope map[string]any
 
 func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
