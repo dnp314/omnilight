@@ -163,3 +163,57 @@ func (m *MovieModel) Delete(id int64) error {
 	return nil
 
 }
+
+// to return all movies with applied filters
+func (m *MovieModel) GetAll(title string, genres []string, filters Filters) ([]*Movie, error) {
+
+	query := `
+		SELECT  id, created_at, title, year, runtime, genres, version
+		FROM movies
+		ORDER BY id
+		`
+
+	// if the query takes logner than 3 seconds, it would cancel
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel() // releases the resources
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	// what does this do?
+	// closes the connection to the database
+	// only used with query or query context, with queryrow it is auto managed
+	defer rows.Close()
+
+	movies := []*Movie{}
+
+	for rows.Next() {
+
+		var movie Movie
+
+		err := rows.Scan(
+			&movie.ID,
+			&movie.CreatedAt,
+			&movie.Title,
+			&movie.Year,
+			&movie.Runtime,
+			pq.Array(&movie.Genres),
+			&movie.Version,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		movies = append(movies, &movie)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return movies, nil
+
+}
