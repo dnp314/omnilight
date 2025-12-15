@@ -167,17 +167,18 @@ func (m *MovieModel) Delete(id int64) error {
 // to return all movies with applied filters
 func (m *MovieModel) GetAll(title string, genres []string, filters Filters) ([]*Movie, error) {
 
-	query := `
-		SELECT  id, created_at, title, year, runtime, genres, version
-		FROM movies
-		ORDER BY id
-		`
+	// WARNING: this does not seem to work, with out without the title
+	query := `SELECT id, created_at, title, year, runtime, genres, version
+	FROM movies
+	WHERE (title ILIKE $1 OR $1 = '')
+	AND (genres @> $2 OR $2 = '{}')
+	ORDER BY id`
 
-	// if the query takes logner than 3 seconds, it would cancel
+	// if the query takes longer than 3 seconds, it would cancel
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel() // releases the resources
 
-	rows, err := m.DB.QueryContext(ctx, query)
+	rows, err := m.DB.QueryContext(ctx, query, title, pq.Array(genres))
 	if err != nil {
 		return nil, err
 	}
