@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"omnilight/internal/data"
 	"omnilight/internal/validator"
+	"strings"
 )
 
 func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
@@ -186,6 +187,7 @@ func (app *application) listMoviesHandler(w http.ResponseWriter, r *http.Request
 	qs := r.URL.Query()
 
 	input.Title = app.readString(qs, "title", "")
+	input.Title = strings.TrimSpace(input.Title)
 	input.Genres = app.readCSV(qs, "genres", nil)
 	input.Filters.Page = app.readInt(qs, "page", 1, v)
 	input.Filters.Pagesize = app.readInt(qs, "pagesize", 20, v)
